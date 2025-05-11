@@ -51,7 +51,7 @@
               v-show="openMenu === entityType.id" 
               class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10"
             >
-              <NuxtLink :to="`/entities/${entityType.id}/edit`" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
+              <NuxtLink :to="`/entities/${entityType.slug}/edit`" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                 Edit
               </NuxtLink>
               <button 
@@ -80,10 +80,10 @@
         </div>
         
         <div class="flex mt-6 space-x-2">
-          <NuxtLink :to="`/entities/${entityType.id}/records`" class="btn btn-sm btn-primary flex-1">
+          <NuxtLink :to="`/entities/${entityType.slug}/records`" class="btn btn-sm btn-primary flex-1">
             View Records
           </NuxtLink>
-          <NuxtLink :to="`/entities/${entityType.id}/records/create`" class="btn btn-sm btn-outline flex-grow-0">
+          <NuxtLink :to="`/entities/${entityType.slug}/records/create`" class="btn btn-sm btn-outline flex-grow-0">
             <Icon icon="heroicons:plus" class="h-4 w-4" />
           </NuxtLink>
         </div>

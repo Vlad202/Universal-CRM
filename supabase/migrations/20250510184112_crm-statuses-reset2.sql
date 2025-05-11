@@ -31,6 +31,7 @@ create table public.entity_records (
 -- Таблица статусов
 create table public.status_definitions (
   id uuid primary key default gen_random_uuid(),
+  entity_type_id uuid references public.entity_types(id) on delete cascade not null,
   name text not null,
   color text default 'gray',
   is_default boolean default false,
@@ -82,7 +83,7 @@ create policy "All users can read statuses" on public.status_definitions
 
 -- История статусов: только автор может писать, все могут читать
 create policy "Users can insert their entity status history" on public.entity_status_history
-  for insert using (auth.uid() = changed_by);
+  for insert with check (auth.uid() = changed_by);
 
 create policy "All users can read status history" on public.entity_status_history
   for select using (true);
@@ -93,3 +94,8 @@ create policy "Users can manage their tasks" on public.tasks
 
 create policy "Users can read their tasks" on public.tasks
   for select using (auth.uid() = assigned_to);
+
+create policy "Users can insert statuses"
+on status_definitions
+for insert
+with check (true);

@@ -82,7 +82,7 @@ create policy "All users can read statuses" on public.status_definitions
 
 -- История статусов: только автор может писать, все могут читать
 create policy "Users can insert their entity status history" on public.entity_status_history
-  for insert using (auth.uid() = changed_by);
+  for insert with check (auth.uid() = changed_by);
 
 create policy "All users can read status history" on public.entity_status_history
   for select using (true);

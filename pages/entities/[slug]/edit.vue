@@ -1,8 +1,8 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-neutral-900">Create Entity Type</h1>
-      <p class="text-neutral-600 mt-2">Define a new custom entity for your CRM.</p>
+      <h1 class="text-3xl font-bold text-neutral-900">Edit Entity Type</h1>
+      <p class="text-neutral-600 mt-2">Update your custom entity configuration.</p>
     </div>
     <div class="card max-w-4xl mx-auto">
       <EntityTypeForm
@@ -12,7 +12,7 @@
         :icon-options="iconOptions"
         :entity-type-options="entityTypeOptions"
         :loading="loading"
-        submit-label="Create Entity"
+        submit-label="Update Entity"
         @submit="handleSubmit"
         @add-field="addField"
         @remove-field="removeField"
@@ -22,14 +22,15 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, computed } from 'vue';
-import { useRouter } from 'vue-router';
+<script setup lang="ts">
+import { useRoute, useRouter } from 'vue-router';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useEntityTypesStore } from '~/stores/entityTypes';
-import { useEntityForm } from '~/composables/useEntityForm';
 import EntityTypeForm from '@/components/EntityTypeForm.vue';
+import { useEntityForm } from '~/composables/useEntityForm';
 import { toast } from 'vue3-toastify';
 
+const route = useRoute();
 const router = useRouter();
 const store = useEntityTypesStore();
 const { createEmptyField, validateField } = useEntityForm();
@@ -39,10 +40,11 @@ const errors = reactive({});
 const fieldErrors = ref([]);
 
 const entityType = reactive({
+  id: '',
   name: '',
   slug: '',
   description: '',
-  icon: 'squares-2x2',
+  icon: '',
   fields: []
 });
 
@@ -61,9 +63,14 @@ const iconOptions = [
   { label: 'Mail', value: 'envelope' }
 ];
 
-const entityTypeOptions = computed(() =>
-  store.entityTypes.map(et => ({ label: et.name, value: et.id }))
-);
+const entityTypeOptions = computed(() => store.entityTypes.map(et => ({ label: et.name, value: et.id })));
+
+onMounted(async () => {
+  loading.value = true;
+  const data = await store.getEntityTypeBySlug(route.params.slug as string);
+  if (data) Object.assign(entityType, structuredClone(data));
+  loading.value = false;
+});
 
 const addField = () => {
   entityType.fields.push(createEmptyField());
@@ -81,8 +88,8 @@ const updateField = ({ index, field }) => {
 
 const handleSubmit = async () => {
   fieldErrors.value = entityType.fields.map(() => ({}));
-
   let isValid = true;
+
   errors.name = entityType.name ? '' : 'Name is required';
   errors.slug = /^[a-z0-9-]+$/.test(entityType.slug || '') ? '' : 'Slug must contain lowercase letters, numbers, and hyphens';
   if (!entityType.name || errors.slug) isValid = false;
@@ -102,11 +109,12 @@ const handleSubmit = async () => {
 
   loading.value = true;
   try {
-    await store.createEntityType(entityType);
-    toast.success('Entity created');
+    console.log('Updating entity type:', entityType);
+    await store.updateEntityType(entityType.id, entityType);
+    // toast.success('Entity updated');
     router.push('/entities');
   } catch (err) {
-    toast.error('Creation failed');
+    toast.error('Update failed');
   } finally {
     loading.value = false;
   }

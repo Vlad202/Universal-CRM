@@ -11,27 +11,27 @@ export type Database = {
     Tables: {
       entity_records: {
         Row: {
-          created_at: string
+          created_at: string | null
           data: Json
           entity_type_id: string
           id: string
-          updated_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           data?: Json
           entity_type_id: string
           id?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           data?: Json
           entity_type_id?: string
           id?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -46,36 +46,36 @@ export type Database = {
       }
       entity_types: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
           fields: Json
           icon: string | null
           id: string
           name: string
           slug: string
-          updated_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           fields?: Json
           icon?: string | null
           id?: string
           name: string
           slug: string
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           fields?: Json
           icon?: string | null
           id?: string
           name?: string
           slug?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
