@@ -4,15 +4,18 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-8">
           <NuxtLink to="/" class="flex items-center space-x-2">
-            <span class="text-xl font-bold text-primary-600">NuxtCRM</span>
+            <span class="text-xl font-bold text-primary-600">😎 CRM</span>
           </NuxtLink>
           
           <nav v-if="user" class="hidden md:flex space-x-6">
             <NuxtLink to="/dashboard" class="text-neutral-600 hover:text-primary-600 transition-colors">
-              Dashboard
+              Дашборд
             </NuxtLink>
             <NuxtLink to="/entities" class="text-neutral-600 hover:text-primary-600 transition-colors">
-              Entities
+              Сутності
+            </NuxtLink>
+            <NuxtLink to="/users" class="text-neutral-600 hover:text-primary-600 transition-colors">
+              Користувачі
             </NuxtLink>
           </nav>
         </div>
@@ -35,28 +38,19 @@
                 v-show="isUserMenuOpen" 
                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10"
               >
-                <NuxtLink to="/profile" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
-                  Profile
+                <NuxtLink :to="`/users/${user.id}/profile`" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
+                  Профіль
                 </NuxtLink>
-                <NuxtLink to="/settings" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
-                  Settings
-                </NuxtLink>
-                <button 
-                  @click="handleLogout" 
-                  class="block w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
-                >
-                  Sign out
-                </button>
               </div>
             </div>
           </template>
           
           <template v-else>
             <NuxtLink to="/auth/login" class="btn btn-sm btn-outline">
-              Sign in
+              Увійти
             </NuxtLink>
             <NuxtLink to="/auth/register" class="btn btn-sm btn-primary">
-              Sign up
+              Вийти
             </NuxtLink>
           </template>
         </div>

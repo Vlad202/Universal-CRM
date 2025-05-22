@@ -1,6 +1,6 @@
 <template>
   <div class="card max-w-md mx-auto">
-    <h2 class="text-2xl font-bold mb-6 text-center">Sign in to your account</h2>
+    <h2 class="text-2xl font-bold mb-6 text-center">Увійдіть свій в аккаунт</h2>
 
     <form @submit.prevent="handleSubmit" novalidate>
       <div v-if="errors.general" class="mb-4 text-red-600 text-sm text-center">
@@ -36,19 +36,19 @@
           to="/auth/reset-password-request"
           class="text-sm text-primary-600 hover:underline"
         >
-          Forgot password?
+          Забули пароль?
         </NuxtLink>
       </div>
 
       <BaseButton type="submit" variant="primary" block :loading="loading">
-        Sign in
+        Увійти
       </BaseButton>
 
       <div class="mt-4 text-center">
         <p class="text-sm text-neutral-600">
-          Don't have an account?
+          У вас є аккаунт?
           <NuxtLink to="/auth/register" class="text-primary-600 hover:underline">
-            Create one
+            Створити
           </NuxtLink>
         </p>
       </div>

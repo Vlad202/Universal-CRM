@@ -2,12 +2,12 @@
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-neutral-900">Entities</h1>
-        <p class="text-neutral-600 mt-2">Manage your custom entity types.</p>
+        <h1 class="text-3xl font-bold text-neutral-900">Сутності</h1>
+        <p class="text-neutral-600 mt-2">Управляйте Вашими типами сутностей.</p>
       </div>
       <NuxtLink to="/entities/create" class="btn btn-primary">
         <Icon icon="heroicons:plus" class="h-4 w-4 mr-2" />
-        New Entity
+        Нова сутніть
       </NuxtLink>
     </div>
     
@@ -21,12 +21,12 @@
           <Icon icon="heroicons:squares-plus" class="h-8 w-8" />
         </div>
       </div>
-      <h2 class="text-2xl font-semibold mb-4">Get started by creating your first entity</h2>
+      <h2 class="text-2xl font-semibold mb-4">Почніть зі створення нової сутності.</h2>
       <p class="text-neutral-600 mb-6 max-w-md mx-auto">
-        Entities are the building blocks of your CRM. Create custom entities like Leads, Contacts, or Projects.
+        Сутності - це основа вашої CRM. Створіть власні сутності, такі як Ліди, Контакти або Проекти.
       </p>
       <NuxtLink to="/entities/create" class="btn btn-primary">
-        Create Your First Entity
+        Створіть свою нову сутність
       </NuxtLink>
     </div>
     
@@ -52,36 +52,36 @@
               class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10"
             >
               <NuxtLink :to="`/entities/${entityType.slug}/edit`" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
-                Edit
+                Редагувати
               </NuxtLink>
               <button 
                 @click="() => handleDeleteEntity(entityType.id, entityType.name)" 
                 class="block w-full text-left px-4 py-2 text-sm text-error-600 hover:bg-neutral-100"
               >
-                Delete
+                Видалити
               </button>
             </div>
           </div>
         </div>
         
         <p class="text-neutral-600 text-sm mb-4">
-          {{ entityType.description || `Manage your ${entityType.name.toLowerCase()}` }}
+          {{ entityType.description || `Управляйте сутністю ${entityType.name.toLowerCase()}` }}
         </p>
         
         <div class="border-t border-neutral-100 pt-4 mt-2">
           <div class="flex items-center text-sm text-neutral-500 mb-2">
             <Icon icon="heroicons:rectangle-stack" class="h-4 w-4 mr-2" />
-            {{ (entityType.fields || []).length }} fields
+            {{ (entityType.fields || []).length }} поля
           </div>
           <div class="flex items-center text-sm text-neutral-500">
             <Icon icon="heroicons:document-text" class="h-4 w-4 mr-2" />
-            {{ entityType.recordCount || 0 }} records
+            {{ entityType.recordCount || 0 }} записи
           </div>
         </div>
         
         <div class="flex mt-6 space-x-2">
           <NuxtLink :to="`/entities/${entityType.slug}/records`" class="btn btn-sm btn-primary flex-1">
-            View Records
+            Дивитися всі записи
           </NuxtLink>
           <NuxtLink :to="`/entities/${entityType.slug}/records/create`" class="btn btn-sm btn-outline flex-grow-0">
             <Icon icon="heroicons:plus" class="h-4 w-4" />
@@ -96,7 +96,7 @@
         <div class="h-12 w-12 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center mb-3">
           <Icon icon="heroicons:plus" class="h-6 w-6" />
         </div>
-        <p class="text-primary-600 font-medium">Create New Entity</p>
+        <p class="text-primary-600 font-medium">Створити нову сутність</p>
       </NuxtLink>
     </div>
   </div>

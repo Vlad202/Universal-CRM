@@ -1,8 +1,8 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-neutral-900">Edit Entity Type</h1>
-      <p class="text-neutral-600 mt-2">Update your custom entity configuration.</p>
+      <h1 class="text-3xl font-bold text-neutral-900">Редагувати тип сутності</h1>
+      <p class="text-neutral-600 mt-2">Оновіть конфігурацію Вашої сутності.</p>
     </div>
     <div class="card max-w-4xl mx-auto">
       <EntityTypeForm
@@ -12,7 +12,7 @@
         :icon-options="iconOptions"
         :entity-type-options="entityTypeOptions"
         :loading="loading"
-        submit-label="Update Entity"
+        submit-label="Оновити сутність"
         @submit="handleSubmit"
         @add-field="addField"
         @remove-field="removeField"
@@ -87,6 +87,7 @@ const updateField = ({ index, field }) => {
 };
 
 const handleSubmit = async () => {
+  console.log('Submitting form', entityType);
   fieldErrors.value = entityType.fields.map(() => ({}));
   let isValid = true;
 
@@ -103,7 +104,7 @@ const handleSubmit = async () => {
   });
 
   if (!isValid) {
-    toast.error('Please fix the form errors.');
+    // toast.error('Please fix the form errors.');
     return;
   }
 

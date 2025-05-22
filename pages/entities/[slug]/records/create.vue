@@ -1,7 +1,7 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-3xl">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-neutral-900">Create {{ entityType?.name || 'Record' }}</h1>
+      <h1 class="text-3xl font-bold text-neutral-900">Створити {{ entityType?.name || 'запис' }}</h1>
       <p class="text-neutral-600 mt-1" v-if="entityType?.description">{{ entityType.description }}</p>
     </div>
 
@@ -13,7 +13,7 @@
       :entity-type="entityType"
       :statuses="statuses"
       :loading="saving"
-      submit-label="Create"
+      submit-label="Створити"
       @submit="handleSubmit"
     />
   </div>

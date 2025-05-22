@@ -20,14 +20,14 @@
         :label="field.label"
         :required="field.required"
         :options="relationOptions[field.name] || []"
-        placeholder="Select related entity"
+        placeholder="Оберіть залежну сутність"
       />
     </div>
 
     <BaseSelect
       v-if="statuses.length"
       v-model="form.status_id"
-      label="Status"
+      label="Статус"
       :options="statuses.map(s => ({ label: s.name, value: s.id }))"
     />
 

@@ -1,6 +1,6 @@
 <template>
   <div class="card max-w-md mx-auto">
-    <h2 class="text-2xl font-bold mb-6 text-center">Create your account</h2>
+    <h2 class="text-2xl font-bold mb-6 text-center">Створіть свій аккаунт</h2>
 
     <form @submit.prevent="handleSubmit" novalidate>
       <div v-if="errors.general" class="mb-4 text-red-600 text-sm text-center">
@@ -10,7 +10,7 @@
       <div class="mb-4">
         <BaseInput
           v-model="email"
-          label="Email address"
+          label="Email адреса"
           type="email"
           placeholder="your@email.com"
           :error="errors.email"
@@ -21,21 +21,21 @@
       <div class="mb-4">
         <BaseInput
           v-model="password"
-          label="Password"
+          label="Пароль"
           type="password"
           placeholder="••••••••"
           :error="errors.password"
           required
         />
         <p class="mt-1 text-xs text-neutral-500">
-          Password must be at least 8 characters long and include letters, numbers, and symbols.
+          Пароль повинен містити не менше 8 символів і включати літери, цифри та символи.
         </p>
       </div>
 
       <div class="mb-6">
         <BaseInput
           v-model="confirmPassword"
-          label="Confirm password"
+          label="Підтвердити пароль"
           type="password"
           placeholder="••••••••"
           :error="errors.confirmPassword"
@@ -46,20 +46,20 @@
       <div class="mb-6">
         <BaseCheckbox
           v-model="acceptTerms"
-          label="I accept the Terms of Service and Privacy Policy"
+          label="Підтверджую згоду на обробку персональних даних."
           :error="errors.acceptTerms"
         />
       </div>
 
       <BaseButton type="submit" variant="primary" block :loading="loading">
-        Create account
+        Створити аккаунт
       </BaseButton>
 
       <div class="mt-4 text-center">
         <p class="text-sm text-neutral-600">
-          Already have an account?
+          Вже є аккаунт?
           <NuxtLink to="/auth/login" class="text-primary-600 hover:underline">
-            Sign in
+            Увійти
           </NuxtLink>
         </p>
       </div>

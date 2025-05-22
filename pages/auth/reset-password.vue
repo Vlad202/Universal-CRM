@@ -1,29 +1,29 @@
 <template>
   <div class="card">
-    <h2 class="text-2xl font-bold mb-6">Create new password</h2>
+    <h2 class="text-2xl font-bold mb-6">Створіть новий пароль</h2>
     <p class="text-neutral-600 mb-6">
-      Please enter your new password below.
+      Будь ласка, введіть свій новий пароль нижче.
     </p>
     
     <form @submit.prevent="handleSubmit">
       <div class="mb-4">
         <BaseInput
           v-model="password"
-          label="New password"
+          label="Новий пароль"
           type="password"
           placeholder="••••••••"
           :error="errors.password"
           required
         />
         <p class="mt-1 text-xs text-neutral-500">
-          Password must be at least 8 characters long and include a mix of letters, numbers, and symbols.
+          Пароль повинен містити не менше 8 символів і включати літери, цифри та символи.
         </p>
       </div>
       
       <div class="mb-6">
         <BaseInput
           v-model="confirmPassword"
-          label="Confirm new password"
+          label="Підтвердити новий пароль"
           type="password"
           placeholder="••••••••"
           :error="errors.confirmPassword"
@@ -37,7 +37,7 @@
         block
         :loading="loading"
       >
-        Reset password
+        Скинути пароль
       </BaseButton>
     </form>
   </div>

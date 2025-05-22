@@ -47,17 +47,17 @@ export const useEntityForm = () => {
   }));
 
   const fieldTypes = computed(() => [
-    { label: 'Text', value: 'text' },
-    { label: 'Number', value: 'number' },
-    { label: 'Checkbox', value: 'boolean' },
-    { label: 'Select', value: 'select' },
-    { label: 'Date', value: 'date' },
-    { label: 'Time', value: 'time' },
-    { label: 'Date & Time', value: 'datetime' },
-    { label: 'Email', value: 'email' },
-    { label: 'Phone', value: 'phone' },
+    { label: 'Текст', value: 'text' },
+    { label: 'Число', value: 'number' },
+    { label: 'Логічний', value: 'boolean' },
+    { label: 'Список', value: 'select' },
+    { label: 'Дата', value: 'date' },
+    { label: 'Час', value: 'time' },
+    { label: 'Дата та час', value: 'datetime' },
+    { label: 'Пошта', value: 'email' },
+    { label: 'Телефон', value: 'phone' },
     { label: 'URL', value: 'url' },
-    { label: 'Relation', value: 'relation' }
+    { label: "Зв'язок з іншою сутністю", value: 'relation' }
   ]);
 
   const createEmptyField = (type = 'text'): FieldDefinition => {
