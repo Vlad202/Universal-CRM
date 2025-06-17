@@ -33,17 +33,24 @@ export const useEntityTypesStore = defineStore('entityTypes', () => {
   async function getEntityType(id: string): Promise<EntityType | null> {
     loading.value = true;
     error.value = null;
-    
+  
     try {
       const { data, error: fetchError } = await supabase
         .from('entity_types')
         .select('*')
         .eq('id', id)
         .single();
-      
-      if (fetchError) throw fetchError;
-      
-      return data as EntityType;
+  
+      if (fetchError || !data) throw fetchError || new Error('Entity type not found');
+  
+      const { data: statuses, error: statusError } = await supabase
+        .from('status_definitions')
+        .select('*')
+        .eq('entity_type_id', data.id);
+  
+      if (statusError) throw statusError;
+  
+      return { ...data, statuses } as EntityType;
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch entity type';
       console.error('Error fetching entity type:', err);
@@ -53,28 +60,68 @@ export const useEntityTypesStore = defineStore('entityTypes', () => {
     }
   }
   
+  async function getEntityTypeBySlug(slug: string): Promise<EntityType | null> {
+    loading.value = true;
+    error.value = null;
+  
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('entity_types')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+  
+      if (fetchError || !data) throw fetchError || new Error('Entity type not found');
+  
+      const { data: statuses, error: statusError } = await supabase
+        .from('status_definitions')
+        .select('*')
+        .eq('entity_type_id', data.id);
+  
+      if (statusError) throw statusError;
+  
+      return { ...data, statuses } as EntityType;
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch entity type';
+      console.error('Error fetching entity type by slug:', err);
+      return null;
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  
   async function createEntityType(entityType: Omit<EntityType, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) {
     loading.value = true;
     error.value = null;
-
+  
     try {
       const user = useSupabaseUser();
-
+  
+      const { statuses = [], ...cleanEntity } = entityType;
+  
       const { data, error: createError } = await supabase
         .from('entity_types')
         .insert({
-          name: entityType.name,
-          description: entityType.description || '',
-          slug: entityType.slug,
-          fields: entityType.fields || [],
-          icon: entityType.icon || 'box',
-          user_id: user.value?.id
+          ...cleanEntity,
+          user_id: user.value?.id,
+          icon: cleanEntity.icon || 'box'
         })
         .select()
         .single();
-      
+  
       if (createError) throw createError;
-      
+  
+      // Сохраняем статусы
+      await Promise.all(
+        statuses.map(status =>
+          supabase.from('status_definitions').insert({
+            ...status,
+            entity_type_id: data.id
+          })
+        )
+      );
+  
       entityTypes.value.unshift(data as EntityType);
       return data as EntityType;
     } catch (err: any) {
@@ -85,39 +132,56 @@ export const useEntityTypesStore = defineStore('entityTypes', () => {
       loading.value = false;
     }
   }
-  
-  async function updateEntityType(id: string, updates: Partial<EntityType>) {
-    loading.value = true;
-    error.value = null;
-    
-    try {
-      const { data, error: updateError } = await supabase
-        .from('entity_types')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (updateError) throw updateError;
-      
-      // Update in local state
-      const index = entityTypes.value.findIndex(et => et.id === id);
-      if (index !== -1) {
-        entityTypes.value[index] = { ...entityTypes.value[index], ...data };
-      }
-      
-      return data as EntityType;
-    } catch (err: any) {
-      error.value = err.message || 'Failed to update entity type';
-      console.error('Error updating entity type:', err);
-      return null;
-    } finally {
-      loading.value = false;
+
+async function updateEntityType(id: string, updates: Partial<EntityType>) {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const { statuses = [], ...cleanUpdates } = updates;
+
+    // 1. Оновлюємо сам entity_type
+    const { data, error: updateError } = await supabase
+      .from('entity_types')
+      .update({
+        ...cleanUpdates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    // 2. Видаляємо всі старі статуси
+    await supabase.from('status_definitions').delete().eq('entity_type_id', id);
+
+    // 3. Вставляємо нові статуси (ID буде генеруватися автоматично, якщо не передавати)
+    if (statuses.length > 0) {
+      await supabase.from('status_definitions').insert(
+        statuses.map(status => ({
+          ...status,
+          entity_type_id: id
+        }))
+      );
     }
+
+    // 4. Оновлюємо локальний store
+    const index = entityTypes.value.findIndex(et => et.id === id);
+    if (index !== -1) {
+      entityTypes.value[index] = { ...entityTypes.value[index], ...data };
+    }
+
+    return data as EntityType;
+  } catch (err: any) {
+    error.value = err.message || 'Failed to update entity type';
+    console.error('Error updating entity type:', err);
+    return null;
+  } finally {
+    loading.value = false;
   }
+}
+
   
   async function deleteEntityType(id: string) {
     loading.value = true;
@@ -151,6 +215,7 @@ export const useEntityTypesStore = defineStore('entityTypes', () => {
     getEntityType,
     createEntityType,
     updateEntityType,
-    deleteEntityType
+    deleteEntityType,
+    getEntityTypeBySlug,
   };
 });

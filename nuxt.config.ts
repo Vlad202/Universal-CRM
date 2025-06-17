@@ -15,6 +15,11 @@ export default defineNuxtConfig({
       exclude: ['/', '/auth/login', '/auth/register'],
     }
   },
+  vite: {
+    server: {
+      allowedHosts: true,
+    },
+  },
   runtimeConfig: {
     public: {
       supabaseUrl: process.env.SUPABASE_URL,

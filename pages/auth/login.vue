@@ -1,6 +1,6 @@
 <template>
   <div class="card max-w-md mx-auto">
-    <h2 class="text-2xl font-bold mb-6 text-center">Sign in to your account</h2>
+    <h2 class="text-2xl font-bold mb-6 text-center">Увійдіть свій в аккаунт</h2>
 
     <form @submit.prevent="handleSubmit" novalidate>
       <div v-if="errors.general" class="mb-4 text-red-600 text-sm text-center">
@@ -10,7 +10,7 @@
       <div class="mb-4">
         <BaseInput
           v-model="email"
-          label="Email address"
+          label="Email"
           type="email"
           placeholder="your@email.com"
           :error="errors.email"
@@ -21,7 +21,7 @@
       <div class="mb-6">
         <BaseInput
           v-model="password"
-          label="Password"
+          label="Пароль"
           type="password"
           placeholder="••••••••"
           :error="errors.password"
@@ -30,28 +30,28 @@
       </div>
 
       <div class="flex items-center justify-between mb-6">
-        <BaseCheckbox v-model="rememberMe" label="Remember me" />
+        <BaseCheckbox v-model="rememberMe" label="Запам'ятати мене" />
 
         <NuxtLink
           to="/auth/reset-password-request"
           class="text-sm text-primary-600 hover:underline"
         >
-          Forgot password?
+          Забули пароль?
         </NuxtLink>
       </div>
 
       <BaseButton type="submit" variant="primary" block :loading="loading">
-        Sign in
+        Увійти
       </BaseButton>
 
-      <div class="mt-4 text-center">
+      <!-- <div class="mt-4 text-center">
         <p class="text-sm text-neutral-600">
-          Don't have an account?
+          У вас є аккаунт?
           <NuxtLink to="/auth/register" class="text-primary-600 hover:underline">
-            Create one
+            Створити
           </NuxtLink>
         </p>
-      </div>
+      </div> -->
     </form>
   </div>
 </template>
@@ -124,11 +124,11 @@ const handleSubmit = async () => {
 
     if (error) throw error;
 
-    toast.success('Successfully signed in');
+    // //toast.success('Successfully signed in');
     router.push('/dashboard');
   } catch (error) {
     errors.general = error.message || 'Unexpected error during sign-in';
-    toast.error(errors.general);
+    // //toast.error(errors.general);
   } finally {
     loading.value = false;
   }

@@ -13,7 +13,7 @@
         error ? 'border-red-500 focus:ring-red-500' : 'border-neutral-300 focus:ring-primary-500'
       ]"
     >
-      <option disabled value="">Select an option</option>
+      <option disabled value="">Оберіть опцію</option>
       <option v-for="option in options" :key="option.value" :value="option.value">
         {{ option.label }}
       </option>
