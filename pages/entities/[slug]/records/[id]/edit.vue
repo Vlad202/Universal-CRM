@@ -26,6 +26,7 @@ import { useSupabaseClient, useSupabaseUser } from '#imports';
 import { toast } from 'vue3-toastify';
 import BaseLoader from '@/components/ui/BaseLoader.vue';
 import EntityRecordForm from '@/components/EntityRecordForm.vue';
+import { handleAutomationsClient } from '@/src/workflow/run.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -73,7 +74,7 @@ onMounted(async () => {
 
   } catch (err) {
     console.error(err);
-    toast.error('Помилка завантаження запису');
+    //toast.error('Помилка завантаження запису');
     router.push(`/entities/${slug}/records`);
   } finally {
     loading.value = false;
@@ -83,23 +84,61 @@ onMounted(async () => {
 async function handleSubmit() {
   saving.value = true;
   try {
-    const { error } = await supabase
+    // 1. Отримуємо старі дані запису
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from('entity_records')
+      .select('data')
+      .eq('id', recordId)
+      .single();
+
+    if (fetchError || !existingRecord) throw fetchError;
+
+    const oldData = existingRecord.data || {};
+    const newData = { ...form };
+
+    // 2. Оновлення запису
+    const { error: updateError } = await supabase
       .from('entity_records')
       .update({
-        data: { ...form },
-        updated_at: new Date().toISOString()
+        data: newData,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', recordId);
 
-    if (error) throw error;
+    if (updateError) throw updateError;
 
-    toast.success('Запис оновлено');
+    // 3. Формування масиву змін
+    const logs = Object.entries(newData)
+      .filter(([key, newVal]) => String(oldData[key]) !== String(newVal))
+      .map(([key, newVal]) => ({
+        entity_record_id: recordId,
+        user_id: user.value.id,
+        field_name: key,
+        old_value: String(oldData[key] ?? ''),
+        new_value: String(newVal),
+        changed_at: new Date().toISOString(),
+      }));
+
+    if (logs.length > 0) {
+      const { error: logError } = await supabase.from('field_change_logs').insert(logs);
+      if (logError) throw logError;
+    }
+
+    await handleAutomationsClient({
+      entityTypeId: entityType.value.id,
+      entityId: recordId,
+      triggerType: 'on_update',
+      entityData: { ...form }
+    });
+
+    //toast.success('Запис оновлено');
     router.push(`/entities/${slug}/records`);
   } catch (err) {
     console.error(err);
-    toast.error('Не вдалося оновити запис');
+    //toast.error('Не вдалося оновити запис');
   } finally {
     saving.value = false;
   }
 }
+
 </script>

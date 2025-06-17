@@ -133,51 +133,55 @@ export const useEntityTypesStore = defineStore('entityTypes', () => {
     }
   }
 
-  async function updateEntityType(id: string, updates: Partial<EntityType>) {
-    loading.value = true;
-    error.value = null;
-  
-    try {
-      const { statuses = [], ...cleanUpdates } = updates;
-  
-      const { data, error: updateError } = await supabase
-        .from('entity_types')
-        .update({
-          ...cleanUpdates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single();
-  
-      if (updateError) throw updateError;
-  
-      // Удалим старые и вставим новые статусы
-      await supabase.from('status_definitions').delete().eq('entity_type_id', id);
-  
-      await Promise.all(
-        statuses.map(status =>
-          supabase.from('status_definitions').insert({
-            ...status,
-            entity_type_id: id
-          })
-        )
+async function updateEntityType(id: string, updates: Partial<EntityType>) {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const { statuses = [], ...cleanUpdates } = updates;
+
+    // 1. Оновлюємо сам entity_type
+    const { data, error: updateError } = await supabase
+      .from('entity_types')
+      .update({
+        ...cleanUpdates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    // 2. Видаляємо всі старі статуси
+    await supabase.from('status_definitions').delete().eq('entity_type_id', id);
+
+    // 3. Вставляємо нові статуси (ID буде генеруватися автоматично, якщо не передавати)
+    if (statuses.length > 0) {
+      await supabase.from('status_definitions').insert(
+        statuses.map(status => ({
+          ...status,
+          entity_type_id: id
+        }))
       );
-  
-      const index = entityTypes.value.findIndex(et => et.id === id);
-      if (index !== -1) {
-        entityTypes.value[index] = { ...entityTypes.value[index], ...data };
-      }
-  
-      return data as EntityType;
-    } catch (err: any) {
-      error.value = err.message || 'Failed to update entity type';
-      console.error('Error updating entity type:', err);
-      return null;
-    } finally {
-      loading.value = false;
     }
-  }  
+
+    // 4. Оновлюємо локальний store
+    const index = entityTypes.value.findIndex(et => et.id === id);
+    if (index !== -1) {
+      entityTypes.value[index] = { ...entityTypes.value[index], ...data };
+    }
+
+    return data as EntityType;
+  } catch (err: any) {
+    error.value = err.message || 'Failed to update entity type';
+    console.error('Error updating entity type:', err);
+    return null;
+  } finally {
+    loading.value = false;
+  }
+}
+
   
   async function deleteEntityType(id: string) {
     loading.value = true;

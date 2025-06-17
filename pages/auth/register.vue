@@ -159,11 +159,11 @@ const handleSubmit = async () => {
 
     if (error) throw error;
 
-    toast.success('Registration successful! Please check your email to verify your account.');
+    // //toast.success('Registration successful! Please check your email to verify your account.');
     router.push('/auth/login');
   } catch (error) {
     errors.general = error.message || 'An error occurred during registration';
-    toast.error(errors.general);
+    // //toast.error(errors.general);
   } finally {
     loading.value = false;
   }

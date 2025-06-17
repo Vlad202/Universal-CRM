@@ -132,10 +132,10 @@ const handleDeleteEntity = async (id, name) => {
   if (confirm(`Are you sure you want to delete the "${name}" entity? This will delete all associated records and cannot be undone.`)) {
     try {
       await entityTypesStore.deleteEntityType(id);
-      toast.success(`"${name}" entity type deleted successfully`);
+      //toast.success(`"${name}" entity type deleted successfully`);
       entityTypes.value = entityTypes.value.filter(et => et.id !== id);
     } catch (error) {
-      toast.error('Error deleting entity type: ' + error.message);
+      //toast.error('Error deleting entity type: ' + error.message);
     }
   }
 };

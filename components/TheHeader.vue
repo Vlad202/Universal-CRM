@@ -17,6 +17,9 @@
             <NuxtLink to="/users" class="text-neutral-600 hover:text-primary-600 transition-colors">
               Користувачі
             </NuxtLink>
+            <NuxtLink to="/workflow" class="text-neutral-600 hover:text-primary-600 transition-colors">
+              Автоматизація
+            </NuxtLink>
           </nav>
         </div>
         
@@ -48,9 +51,6 @@
           <template v-else>
             <NuxtLink to="/auth/login" class="btn btn-sm btn-outline">
               Увійти
-            </NuxtLink>
-            <NuxtLink to="/auth/register" class="btn btn-sm btn-primary">
-              Вийти
             </NuxtLink>
           </template>
         </div>
@@ -92,10 +92,10 @@ const handleClickOutside = (event) => {
 const handleLogout = async () => {
   try {
     await useNuxtApp().$supabaseauth.signOut();
-    toast.success('Successfully signed out');
+    // //toast.success('Successfully signed out');
     router.push('/auth/login');
   } catch (error) {
-    toast.error('Error signing out: ' + error.message);
+    // //toast.error('Error signing out: ' + error.message);
   }
 };
 

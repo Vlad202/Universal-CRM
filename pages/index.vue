@@ -12,9 +12,6 @@
           так, як вам зручно. Без програмування.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <NuxtLink to="/auth/register" class="btn btn-primary btn-lg">
-            Почати безкоштовно
-          </NuxtLink>
           <a href="#features" class="btn btn-outline btn-lg">
             Дізнатися більше
           </a>
@@ -131,12 +128,6 @@
           Почніть вже сьогодні і переконайтесь, як легко створити систему, що
           ідеально підходить саме вам.
         </p>
-        <NuxtLink
-          to="/auth/register"
-          class="btn bg-white text-primary-600 hover:bg-primary-50 btn-lg"
-        >
-          Зареєструватися
-        </NuxtLink>
       </div>
     </section>
   </div>

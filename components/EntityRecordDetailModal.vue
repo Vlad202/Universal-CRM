@@ -1,7 +1,11 @@
 <template>
-  <BaseModal :model-value="modelValue" @update:model-value="close" class="max-w-6xl w-full">
+  <BaseModal
+    :model-value="modelValue"
+    @update:model-value="close"
+    class="max-w-6xl w-full"
+  >
     <template #title>
-      <span class="font-medium"> Редагувати запис "{{ displayTitle }}" </span>
+      <span class="font-medium">Редагувати запис "{{ displayTitle }}"</span>
     </template>
 
     <template #default>
@@ -58,11 +62,11 @@
                 <p class="font-semibold">Автор:</p>
                 <p class="text-neutral-800">
                   <NuxtLink
-                    v-if="record.createdById"
-                    :to="`/users/${record.createdById}/profile`"
+                    v-if="record.user_id"
+                    :to="`/users/${record.user_id}/profile`"
                     class="text-blue-600 underline"
                   >
-                    {{ record.ownerName || record.email || "—" }}
+                    {{ authorName }}
                   </NuxtLink>
                 </p>
               </div>
@@ -82,18 +86,53 @@
           <ul class="space-y-3 text-sm">
             <li
               v-for="entry in history"
-              :key="entry.timestamp"
+              :key="entry.timestamp + entry.field + entry.old + entry.new"
               class="border-l-2 border-primary-500 pl-3"
             >
               <p class="font-medium">
-                {{ entry.field }}:
-                <span class="text-neutral-800"
-                  >{{ entry.old }} → {{ entry.new }}</span
-                >
+                <span class="text-neutral-600">
+                  {{ fieldLabels[entry.field] || entry.field }}:
+                </span>
+                <span class="text-neutral-800">
+                  <template v-if="statusMap[entry.old] || statusMap[entry.new]">
+                    {{ statusMap[entry.old] || entry.old }}
+                    <span class="text-neutral-400">→</span>
+                    {{ statusMap[entry.new] || entry.new }}
+                  </template>
+                  <template v-else>
+                    {{ entry.old }} <span class="text-neutral-400">→</span> {{ entry.new }}
+                  </template>
+                </span>
               </p>
-              <p class="text-neutral-500">{{ formatDate(entry.timestamp) }}</p>
+              <div class="flex items-center gap-2 text-neutral-500 text-xs mt-0.5">
+                <span>{{ formatDate(entry.timestamp) }}</span>
+                <span v-if="entry.user_id">•</span>
+                <span v-if="entry.user_id">
+                  <NuxtLink
+                    :to="`/users/${entry.user_id}/profile`"
+                    class="text-blue-600 underline italic"
+                  >
+                    {{
+                      userMap[entry.user_id]?.name ||
+                      userMap[entry.user_id]?.email ||
+                      "Невідомий користувач"
+                    }}
+                  </NuxtLink>
+                </span>
+              </div>
             </li>
           </ul>
+          <!-- Кнопка підвантаження -->
+          <div v-if="historyHasMore && !loading" class="flex justify-center mt-4">
+            <button
+              @click="fetchHistoryChunk()"
+              class="btn btn-outline"
+              :disabled="historyLoadingMore"
+            >
+              <span v-if="!historyLoadingMore">Завантажити ще</span>
+              <span v-else class="animate-pulse">Завантаження…</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -144,7 +183,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
@@ -152,6 +191,9 @@ import { useSupabaseClient } from "#imports";
 
 import BaseModal from "@/components/ui/BaseModal.vue";
 import BaseLoader from "@/components/ui/BaseLoader.vue";
+
+const userMap = ref({});
+const statusMap = ref({});
 
 const props = defineProps({
   modelValue: Boolean,
@@ -165,7 +207,13 @@ const supabase = useSupabaseClient();
 
 const loading = ref(false);
 const record = ref(null);
+
 const history = ref([]);
+const historyPage = ref(0);
+const historyPageSize = 5;
+const historyHasMore = ref(true);
+const historyLoadingMore = ref(false);
+
 const showConfirmDelete = ref(false);
 
 const displayTitle = computed(
@@ -176,49 +224,141 @@ const displayTitle = computed(
     `ID ${record.value?.id}`
 );
 
+const authorName = ref("—");
+
+async function fetchAuthor(id) {
+  if (!id) return;
+  const { data } = await supabase.auth.admin.getUserById(id);
+  if (data?.user) {
+    const meta = data.user.user_metadata || {};
+    authorName.value =
+      meta.first_name && meta.last_name
+        ? `${meta.first_name} ${meta.last_name}`
+        : data.user.email;
+  } else {
+    authorName.value = "Невідомий користувач";
+  }
+}
+
+async function fetchStatuses() {
+  if (!props.entityType?.id) return;
+  const { data, error } = await supabase
+    .from('status_definitions')
+    .select('id, name')
+    .eq('entity_type_id', props.entityType.id);
+
+  if (!error && data) {
+    const map = {};
+    data.forEach(status => {
+      map[status.id] = status.name;
+    });
+    statusMap.value = map;
+  }
+}
+
+async function fetchUsersInfo(userIds) {
+  if (!userIds.length) return;
+  const map = {};
+  for (const id of userIds) {
+    const { data, error } = await supabase.auth.admin.getUserById(id);
+    if (!error && data?.user) {
+      const meta = data.user.user_metadata || {};
+      map[data.user.id] = {
+        name:
+          meta.first_name && meta.last_name
+            ? `${meta.first_name} ${meta.last_name}`
+            : data.user.email,
+        email: data.user.email,
+      };
+    }
+  }
+  userMap.value = map;
+}
+
 function close() {
   emit("update:modelValue", false);
 }
 
+const fieldLabels = computed(() => {
+  const map = {};
+  (props.entityType?.fields || []).forEach((f) => {
+    map[f.name] = f.label || f.name;
+  });
+  // Явно підміняємо назву для status_id
+  map["status_id"] = "Статус";
+  return map;
+});
+
+// ======= NEW PAGINATED HISTORY LOADER =======
+async function fetchHistoryChunk({ reset = false } = {}) {
+  if (reset) {
+    history.value = [];
+    historyPage.value = 0;
+    historyHasMore.value = true;
+  }
+  if (!historyHasMore.value) return;
+
+  historyLoadingMore.value = true;
+  // Імітація затримки (600 мс)
+  await new Promise(r => setTimeout(r, 600));
+
+  const start = historyPage.value * historyPageSize;
+  const end = start + historyPageSize - 1;
+
+  const { data: logData, error } = await supabase
+    .from("field_change_logs")
+    .select("*")
+    .eq("entity_record_id", props.recordId)
+    .order("changed_at", { ascending: false })
+    .range(start, end);
+
+  if (!error && logData && logData.length) {
+    const chunk = logData.map((log) => ({
+      field: log.field_name,
+      old: log.old_value,
+      new: log.new_value,
+      timestamp: log.changed_at,
+      user_id: log.user_id,
+    }));
+    history.value.push(...chunk);
+    historyPage.value += 1;
+    if (logData.length < historyPageSize) historyHasMore.value = false;
+  } else {
+    historyHasMore.value = false;
+  }
+
+  historyLoadingMore.value = false;
+}
+
+// ========================
+
 async function fetchRecord() {
   loading.value = true;
   try {
+    // 1. Сама сутність
     const { data, error } = await supabase
       .from("entity_records")
       .select("*")
       .eq("id", props.recordId)
       .single();
-
     if (error) throw error;
     record.value = data;
 
-    // Fetch user info
-    if (record.value?.user_id) {
-      const { data: userData, error: userError } =
-        await supabase.auth.admin.getUserById(record.value.user_id);
-      if (userData && userData.user) {
-        const meta = userData.user?.user_metadata || {};
-        record.value.createdById = userData.user.id;
-        record.value.email = userData.user.email;
-        record.value.ownerName =
-          meta.first_name && meta.last_name
-            ? `${meta.first_name} ${meta.last_name}`
-            : userData.email;
-      } else {
-        record.value.ownerName = "—";
-      }
-    } else {
-      record.value.ownerName = "—";
-    }
+    // 2. Підтягуємо статуси
+    await fetchStatuses();
 
-    history.value = [
-      {
-        field: "status_id",
-        old: "Новий",
-        new: "У роботі",
-        timestamp: "2025-05-19T10:12:00Z",
-      },
-    ];
+    // 3. Підтягуємо першу порцію історії
+    await fetchHistoryChunk({ reset: true });
+
+    // 4. Підтягуємо userMap по унікальних user_id
+    const uniqueUserIds = Array.from(
+      new Set((history.value || []).map((e) => e.user_id).filter(Boolean))
+    );
+    await fetchUsersInfo(uniqueUserIds);
+
+    // 5. Автор
+    await fetchAuthor(record.value.user_id);
+
   } catch (e) {
     console.error("Помилка завантаження:", e);
     alert("Не вдалося завантажити запис");

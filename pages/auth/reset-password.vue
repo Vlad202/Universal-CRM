@@ -101,11 +101,11 @@ const handleSubmit = async () => {
     
     if (error) throw error;
     
-    toast.success('Password has been reset successfully');
+    // //toast.success('Password has been reset successfully');
     router.push('/auth/login');
   } catch (error) {
     errors.general = error.message || 'An error occurred while resetting password';
-    toast.error(errors.general);
+    // //toast.error(errors.general);
   } finally {
     loading.value = false;
   }
@@ -116,7 +116,7 @@ onMounted(() => {
   const checkSession = async () => {
     const { data } = await useNuxtApp().$supabaseauth.getSession();
     if (!data.session) {
-      toast.error('Password reset link is invalid or has expired');
+      // //toast.error('Password reset link is invalid or has expired');
       router.push('/auth/login');
     }
   };

@@ -97,17 +97,17 @@ const handleSubmit = async () => {
   });
 
   if (!isValid) {
-    // toast.error('Please fix the form errors.');
+    // //toast.error('Please fix the form errors.');
     return;
   }
 
   loading.value = true;
   try {
     await store.createEntityType(entityType);
-    // toast.success('Entity created');
+    // //toast.success('Entity created');
     router.push('/entities');
   } catch (err) {
-    // toast.error('Creation failed');
+    // //toast.error('Creation failed');
   } finally {
     loading.value = false;
   }

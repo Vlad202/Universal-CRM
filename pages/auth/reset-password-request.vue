@@ -83,11 +83,11 @@ const handleSubmit = async () => {
     
     if (error) throw error;
     
-    toast.success('Password reset link sent to your email');
+    // //toast.success('Password reset link sent to your email');
     email.value = '';
   } catch (error) {
     errors.general = error.message || 'An error occurred while sending reset link';
-    toast.error(errors.general);
+    // //toast.error(errors.general);
   } finally {
     loading.value = false;
   }

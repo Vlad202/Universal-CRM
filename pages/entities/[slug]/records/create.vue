@@ -26,6 +26,7 @@ import { useSupabaseClient, useSupabaseUser } from '#imports';
 import BaseLoader from '@/components/ui/BaseLoader.vue';
 import EntityRecordForm from '@/components/EntityRecordForm.vue';
 import { toast } from 'vue3-toastify';
+import { handleAutomationsClient } from '@/src/workflow/run.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -60,7 +61,7 @@ onMounted(async () => {
       form.status_id = defaultStatus;
     }
   } catch (err) {
-    toast.error('Failed to load entity type');
+    //toast.error('Failed to load entity type');
     router.push('/entities');
   } finally {
     loading.value = false;
@@ -70,15 +71,43 @@ onMounted(async () => {
 async function handleSubmit() {
   saving.value = true;
   try {
-    const { error } = await supabase.from('entity_records').insert({
-      entity_type_id: entityType.value.id,
+    // 1. Створення запису сутності
+    const { data: inserted, error: insertError } = await supabase
+      .from('entity_records')
+      .insert({
+        entity_type_id: entityType.value.id,
+        user_id: user.value.id,
+        data: { ...form },
+      })
+      .select('id, data')
+      .single();
+
+    if (insertError) throw insertError;
+
+    // 2. Запис змін у field_change_logs
+    const logs = Object.entries(form).map(([field, value]) => ({
+      entity_record_id: inserted.id,
       user_id: user.value.id,
-      data: { ...form },
+      field_name: field,
+      old_value: null,
+      new_value: String(value),
+      changed_at: new Date().toISOString(),
+    }));
+
+    const { error: logError } = await supabase.from('field_change_logs').insert(logs);
+    if (logError) throw logError;
+
+    // === ВИКЛИК АВТОМАТИЗАЦІЙ ===
+    await handleAutomationsClient({
+      entityTypeId: entityType.value.id,
+      entityId: inserted.id,
+      triggerType: 'on_create',
+      entityData: { ...form }
     });
-    if (error) throw error;
+
     router.push(`/entities/${slug}/records`);
   } catch (err) {
-    toast.error('Failed to create record');
+    // toast.error('Не вдалося створити запис');
   } finally {
     saving.value = false;
   }
